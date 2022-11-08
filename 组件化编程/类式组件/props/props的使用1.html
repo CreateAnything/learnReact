@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="test1"></div>
+    <div id="test2"></div>
+    <div id="test3"></div>
+    <!-- react核心库 -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <!-- 引入react-dom,用于支持react操作Dom -->
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- 用于将jsx转化为js -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+        //1.创建类式组件
+        class Person extends React.Component{
+            render(){
+                const {name,age,sex} = this.props
+                return (
+                    <ul>
+                        <li>姓名:{name}</li>
+                        <li>性别:{sex}</li>
+                        <li>年龄:{age}</li>
+                    </ul>
+                )
+            }
+        }
+        //渲染组件到页面
+        const person = {
+            name:'老刘',
+            age:35,
+            sex:'男'
+        }
+        let person1 = {...person,name:'老王'}
+        //如果属性过多的情况下可以
+        ReactDOM.render(<Person {...person}/>,document.getElementById('test3'))
+        ReactDOM.render(<Person {...person1} />,document.getElementById('test1'))
+        ReactDOM.render(<Person name="AL" age="18" sex="男"/>,document.getElementById('test2'))
+    </script>
+</body>
+</html>

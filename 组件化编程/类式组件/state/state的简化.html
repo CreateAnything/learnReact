@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="test"></div>
+    <!-- react核心库 -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <!-- 引入react-dom,用于支持react操作Dom -->
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- 用于将jsx转化为js -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+        //1.创建类式组件
+        class Weather extends React.Component{
+            state = {
+                isHot:true
+            }
+            changeWeather = () =>{
+                this.setState({isHot:!this.state.isHot})
+            }
+            render(){
+                const {isHot} = this.state
+                return (
+                    <h1 onClick={this.changeWeather}>今天天气很{isHot ? '炎热' : '凉爽'}</h1>
+                )
+            }
+        }
+        //渲染组件到页面
+        ReactDOM.render(<Weather/>,document.getElementById('test'))
+    </script>
+</body>
+</html>

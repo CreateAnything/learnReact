@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="test"></div>
+    <!-- react核心库 -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <!-- 引入react-dom,用于支持react操作Dom -->
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- 用于将jsx转化为js -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <!-- 引入proptype.js用于验证props类型 -->
+    <script crossorigin src="https://unpkg.com/prop-types@15.6.2/prop-types.js"></script>
+    <script type="text/babel">
+        //1.创建类式组件
+        class Person extends React.Component{
+            /*
+                通常在React中构造函数仅用于以下两种情况
+                1.通过this.state赋值对象来初始化内部state
+                2.为事件处理函数绑定实列
+                注意:在构造器中不要调用setState()方法,如果你的组件需要使用内部的state
+                轻直接在构造函数中为this.state赋初始state
+            */
+            constructor(props){
+                //构造器是否接受props,是否传递给super取决于是否希望在构造器中通过this访问props
+                super(props)
+            }
+            //对标签属性进行类型，必要性的限制
+            static propTypes = {
+                name:PropTypes.string.isRequired,//名字必须是string类型而且必须是必传
+                age:PropTypes.number,//性别必须是number类型(非必传)
+                sex:PropTypes.string,//性别必须为string类型(非必传)              
+            }
+            //指定默认标签属性值
+            static defaultProps = {
+                sex:'男',
+                age:18              
+            }
+            render(){
+                const {name,age,sex} = this.props
+                //props是只读的不能修改
+                return (
+                    <ul>
+                        <li>姓名:{name}</li>
+                        <li>性别:{sex}</li>
+                        <li>年龄:{age}</li>
+                    </ul>
+                )
+            }
+        }
+        
+        //渲染组件到页面
+        ReactDOM.render(<Person name="老王"/>,document.getElementById('test'))
+    </script>
+</body>
+</html>

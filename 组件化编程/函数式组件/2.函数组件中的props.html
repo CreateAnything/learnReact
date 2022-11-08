@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="test"></div>
+    <!-- react核心库 -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <!-- 引入react-dom,用于支持react操作Dom -->
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- 用于将jsx转化为js -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <!-- 引入proptype.js用于验证props类型 -->
+    <script crossorigin src="https://unpkg.com/prop-types@15.6.2/prop-types.js"></script>
+    <script type="text/babel">
+        //1.创建函数式组件
+        function Person(props){
+            const {name,age,sex} = props
+            return (
+                <ul>
+                    <li>姓名:{name}</li>
+                    <li>性别:{sex}</li>
+                    <li>年龄:{age}</li>
+                </ul>
+            )
+        }
+            //对标签属性进行类型，必要性的限制
+        Person.propTypes = {
+                name:PropTypes.string.isRequired,//名字必须是string类型而且必须是必传
+                age:PropTypes.number,//性别必须是number类型(非必传)
+                sex:PropTypes.string,//性别必须为string类型(非必传)
+                speak:PropTypes.func//方法必须为一个function(非必传)                
+        }
+            //指定默认标签属性值
+        Person.defaultProps = {
+                sex:'男',
+                age:18              
+        }        
+        //渲染组件到页面
+        ReactDOM.render(<Person name="wmq" age={18} sex="男"/>,document.getElementById('test'))
+    </script>
+</body>
+</html>
