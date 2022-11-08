@@ -6,19 +6,93 @@
 
 
 
-### 1.1.React实现
+### 1.1.React虚拟Dom
 
-![image-20221108122008242](C:\Users\wmq39\AppData\Roaming\Typora\typora-user-images\image-20221108122008242.png)
+1. 什么是Dom
+
+   DOM是用一颗逻辑树来表示一个文档，树的每个分支的终点都是一个节点，可以用特定的方式（编写JS、CSS、HTML）来改变这个树的结构，从而改变文档结构、样式或内容。
+
+2. 什么是虚拟Dom
+
+   虚拟DOM就是一个JS对象，通过对象的方式来表示DOM结构，通过事务处理机制，将多次DOM修改的结果一次性更新到页面上，从而有效的减少页面渲染次数，减少修改DOM重绘重排的时间，提高渲染性能。
+
+   React在内存中维护一个跟真实DOM一样的虚拟DOM树，再改动完组件后，会再生成一个新的虚拟DOM，React会将新的虚拟DOM和原来的虚拟DOM进行对比，找出两个DOM树的不同的地方（diff），然后在真实DOM上更新diff，提高渲染速度。
+
+3. 为什么要使用虚拟dom
+
+   1. 提供更好的性能
+      - 对于真实DOM：生成HTML字符串，重建`所有`DOM元素
+      - 对于虚拟DOM：生成虚拟DOM节点，采用diff算法，更新出现变化的真实DOM节点
+   2. 虚拟DOM虽然要进行更多的步骤，但它的性能消耗是极低的。
 
 ### 1.2.虚拟Dom创建的两种方式
 
 1. 使用jsx创建虚拟dom(推荐使用)
 
-   ![image-20221108141309335](C:\Users\wmq39\AppData\Roaming\Typora\typora-user-images\image-20221108141309335.png)
+   ```react
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Document</title>
+   </head>
+   <body>
+       <!-- 准备好一个容器 -->
+       <div id="test"></div>
+       <!-- react核心库 -->
+       <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+       <!-- 引入react-dom,用于支持react操作Dom -->
+       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+       <!-- 用于将jsx转化为js -->
+       <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+       <script type="text/babel">
+           //1.创建虚拟dom
+           const Vdom = (
+               <h1 id="title"><span>Hello,React</span></h1>
+           )//此处不要写引号，因为不是字符串
+           //2.渲染虚拟dom到页面
+           ReactDOM.render(Vdom,document.getElementById('test'))
+           console.log(Vdom)
+       </script>
+   </body>
+   </html>
+   ```
+
+   
 
 2. 使用js创建虚拟dom(不推荐使用太繁琐)
 
-   ![image-20221108141330976](C:\Users\wmq39\AppData\Roaming\Typora\typora-user-images\image-20221108141330976.png)
+   ```react
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Document</title>
+   </head>
+   <body>
+       <!-- 准备好一个容器 -->
+       <div id="test"></div>
+       <!-- react核心库 -->
+       <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+       <!-- 引入react-dom,用于支持react操作Dom -->
+       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+       <script type="text/javascript">
+           //1.创建虚拟dom
+           const Vdom = React.createElement('h1',{
+               id:'title'
+           },React.createElement('span',{},'Hello,React'))
+           //2.渲染虚拟dom到页面
+           ReactDOM.render(Vdom,document.getElementById('test'))
+       </script>
+   </body>
+   </html>
+   ```
+
+   
 
 3. 什么是虚拟dom
 
