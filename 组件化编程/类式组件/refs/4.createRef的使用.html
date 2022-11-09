@@ -18,13 +18,29 @@
     <script type="text/babel">
         //1.创建类式组件
         class MyComponent extends React.Component{
+            /*
+                React.createRef()调用后可以返回一个容器可以存储被ref标识的节点
+                该容器是专人专用的只能存一个
+            */
+            myRef = React.createRef()
+            myRef2 = React.createRef()
+
+            showData = () =>{
+                console.log(this.myRef.current.value)
+            }
+            inputBlur = () =>{
+                console.log(this.myRef2.current.value)
+            }
             render(){
                 return (
-                    <h1>我是类式组件</h1>
+                    <div>
+                        <input ref={this.myRef} type="text" placeholder="点击按钮提示数据"/>
+                        <button onClick={this.showData}>点我提示左侧数据</button>  
+                        <input ref={this.myRef2} onBlur = {this.inputBlur} type="text" placeholder="失去焦点提示数据"/>             
+                    </div>
                 )
             }
         }
-        //渲染组件到页面
         ReactDOM.render(<MyComponent/>,document.getElementById('test'))
     </script>
 </body>

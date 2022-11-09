@@ -694,3 +694,818 @@
    </body>
    </html>
    ```
+
+#### 2.2.4.refs的使用
+
+1. 字符串形式的ref
+
+   ```react
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Document</title>
+   </head>
+   <body>
+       <!-- 准备好一个容器 -->
+       <div id="test"></div>
+       <!-- react核心库 -->
+       <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+       <!-- 引入react-dom,用于支持react操作Dom -->
+       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+       <!-- 用于将jsx转化为js -->
+       <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+       <script type="text/babel">
+           //1.创建类式组件
+           class MyComponent extends React.Component{
+               showData = () =>{
+                 const {input1} = this.refs
+                 alert(input1.value)
+               }
+               
+               showData2 = () =>{
+                 const {input2} = this.refs
+                 alert(input2.value)
+               }
+               render(){
+                   return (
+                       <div>
+                           <input ref="input1" type="text" placeholder="点击按钮提示数据"/>
+                           <button onClick={this.showData}>点我提示左侧数据</button>  
+                           <input ref="input2" onBlur={this.showData2} type="text" placeholder="失去焦点提示数据"/>                
+                       </div>
+                   )
+               }
+           }
+           ReactDOM.render(<MyComponent/>,document.getElementById('test'))
+       </script>
+   </body>
+   </html>
+   ```
+
+   这种字符串类型的refs已经过时,我们不建议使用它，因为 string 类型的 refs 存在 [**一些问题**](https://github.com/facebook/react/pull/8333#issuecomment-271648615)。它已过时并可能会在未来的版本被移除
+
+2. 回调形式的ref
+
+   1. 回调形式的ref
+
+      ```react
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Document</title>
+      </head>
+      <body>
+          <!-- 准备好一个容器 -->
+          <div id="test"></div>
+          <!-- react核心库 -->
+          <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+          <!-- 引入react-dom,用于支持react操作Dom -->
+          <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+          <!-- 用于将jsx转化为js -->
+          <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+          <script type="text/babel">
+              //1.创建类式组件
+              class MyComponent extends React.Component{
+                  showData = () =>{
+                      console.log(this.input1.value)
+                  }
+              
+                  render(){
+                      return (
+                          <div>
+                              <input ref={c =>this.input1 = c} type="text" placeholder="点击按钮提示数据"/>
+                              <button onClick={this.showData}>点我提示左侧数据</button>               
+                          </div>
+                      )
+                  }
+              }
+              ReactDOM.render(<MyComponent/>,document.getElementById('test'))
+          </script>
+      </body>
+      </html>
+      ```
+
+      问题:当页面渲染时(除去第一次渲染)该回调会被执行两次，第一次为null，第二次为最新的dom节点。这是因为在每次渲染时会创建一个新的函数实例，所以 React 清空旧的 ref 并且设置新的。(但是对性能影响不大)开发中常用
+
+   2. class 的绑定函数的方式
+
+      ```react
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Document</title>
+      </head>
+      <body>
+          <!-- 准备好一个容器 -->
+          <div id="test"></div>
+          <!-- react核心库 -->
+          <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+          <!-- 引入react-dom,用于支持react操作Dom -->
+          <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+          <!-- 用于将jsx转化为js -->
+          <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+          <script type="text/babel">
+              //1.创建类式组件
+              class MyComponent extends React.Component{
+                  state = {
+                      isHot:true
+                  }
+                  showData = () =>{
+                      console.log(this.input1.value)
+                  }
+      
+                  saveInput = (c) =>{
+                      this.input1 = c
+                      console.log('@',c)
+                  }
+      
+                  changeWeather = () =>{
+                      const {isHot} = this.state
+                      this.setState({isHot:!isHot})
+                  }
+                  render(){
+                      const {isHot} = this.state
+                      return (
+                          <div>
+                              <input ref={this.saveInput} type="text" placeholder="点击按钮提示数据"/>
+                              <button onClick={this.showData}>点我提示左侧数据</button>
+                              <h1>今天天气很{isHot ? '炎热' : '凉爽'}</h1>       
+                              <button onClick={this.changeWeather}>点击修改天气</button>     
+                          </div>
+                      )
+                  }
+              }
+              ReactDOM.render(<MyComponent/>,document.getElementById('test'))
+          </script>
+      </body>
+      </html>
+      ```
+
+      使用类绑定模式只会在第一次渲染时执行回调
+
+3. createRef容器
+
+   ```react
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Document</title>
+   </head>
+   <body>
+       <!-- 准备好一个容器 -->
+       <div id="test"></div>
+       <!-- react核心库 -->
+       <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+       <!-- 引入react-dom,用于支持react操作Dom -->
+       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+       <!-- 用于将jsx转化为js -->
+       <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+       <script type="text/babel">
+           //1.创建类式组件
+           class MyComponent extends React.Component{
+               /*
+                   React.createRef()调用后可以返回一个容器可以存储被ref标识的节点
+                   该容器是专人专用的只能存一个
+               */
+               myRef = React.createRef()
+               myRef2 = React.createRef()
+   
+               showData = () =>{
+                   console.log(this.myRef.current.value)
+               }
+               inputBlur = () =>{
+                   console.log(this.myRef2.current.value)
+               }
+               render(){
+                   return (
+                       <div>
+                           <input ref={this.myRef} type="text" placeholder="点击按钮提示数据"/>
+                           <button onClick={this.showData}>点我提示左侧数据</button>  
+                           <input ref={this.myRef2} onBlur = {this.inputBlur} type="text" placeholder="失去焦点提示数据"/>             
+                       </div>
+                   )
+               }
+           }
+           ReactDOM.render(<MyComponent/>,document.getElementById('test'))
+       </script>
+   </body>
+   </html>
+   ```
+
+   这是react最推荐的一种写法
+
+4. 注意
+
+   1. **你不能在函数组件上使用 `ref` 属性**，因为他们没有实例
+   2. 当 `ref` 属性用于自定义 class 组件时，`ref` 对象接收组件的挂载实例作为其`current` 属性
+   3. 当 `ref` 属性用于 HTML 元素时，构造函数中使用 `React.createRef()` 创建的 `ref` 接收底层 DOM 元素作为其 `current` 属性
+   4. 请勿过度使用ref
+
+#### 2.2.5.react中的事件处理
+
+1. 事件处理
+
+   ```react
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Document</title>
+   </head>
+   <body>
+       <!-- 准备好一个容器 -->
+       <div id="test"></div>
+       <!-- react核心库 -->
+       <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+       <!-- 引入react-dom,用于支持react操作Dom -->
+       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+       <!-- 用于将jsx转化为js -->
+       <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+       <script type="text/babel">
+           /*
+               react中的事件处理
+               1.通过onXxx属性指定事件处理函数(注意大小写)
+                   a.React使用的是自定义(合成)事件，而不是使用的原生Dom事件 ---为了更好的兼容性
+                   b.React中的事件是通过事件委托方式处理的(委托给组件最外层元素)---事件委托的方式效率更高
+               2.通过Event.target得到发生事件的Dom元素对象---- 不要过度使用ref(发生事件的元素正好是你要操作的元素就可以使用事件委托)
+           */
+           //1.创建类式组件
+           class MyComponent extends React.Component{
+               //创建ref容器
+               myRef = React.createRef()
+               myRef2 = React.createRef()
+   
+               showData = () =>{
+                   console.log(this.myRef.current.value)
+               }
+   
+               inputBlur = (event) =>{//发生事件的元素正好是你要操作的元素就可以使用事件委托
+                   console.log(event.target.value)
+               }
+               render(){
+                   return (
+                       <div>
+                           <input ref={this.myRef} type="text" placeholder="点击按钮提示数据"/>
+                           <button onClick={this.showData}>点我提示左侧数据</button>  
+                           <input onBlur = {this.inputBlur} type="text" placeholder="失去焦点提示数据"/>             
+                       </div>
+                   )
+               }
+           }
+           ReactDOM.render(<MyComponent/>,document.getElementById('test'))
+       </script>
+   </body>
+   </html>
+   ```
+
+   
+
+2. 非受控组件
+
+   ```react
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Document</title>
+   </head>
+   <body>
+       <!-- 准备好一个容器 -->
+       <div id="test"></div>
+       <!-- react核心库 -->
+       <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+       <!-- 引入react-dom,用于支持react操作Dom -->
+       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+       <!-- 用于将jsx转化为js -->
+       <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+       <script type="text/babel">
+           //1.非受控组件(现用现取的组件)
+           class Login extends React.Component{
+               handleSubmit = (event) =>{
+                   event.preventDefault()//阻止表单提交
+                   const {username,password} = this
+                   console.log(username.value,password.value)
+               }
+               render(){
+                   return (
+                       <form action="http://www.atguigu.com" onSubmit={this.handleSubmit}>
+                           用户名:<input ref={c =>this.username = c} type="text" name="username"/>
+                           密码:<input ref={c =>this.password = c} type="password"name="password" />
+                           <button>登录</button>
+                       </form>
+                   )
+               }
+           }
+           ReactDOM.render(<Login/>,document.getElementById('test'))
+       </script>
+   </body>
+   </html>
+   ```
+
+   
+
+3. 受控组件
+
+   ```react
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Document</title>
+   </head>
+   <body>
+       <!-- 准备好一个容器 -->
+       <div id="test"></div>
+       <!-- react核心库 -->
+       <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+       <!-- 引入react-dom,用于支持react操作Dom -->
+       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+       <!-- 用于将jsx转化为js -->
+       <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+       <script type="text/babel">
+           //1.受控组件(随着输入就可以维护到状态中，使用的话就可以取出来)
+           class Login extends React.Component{
+               state = {
+                   username:'',
+                   password:''
+               }
+               handleSubmit = (event) =>{
+                   event.preventDefault()
+                   const {username,password} = this.state
+                   alert(`你的账号为${username},密码为${password}`)
+               }
+               usernameChange = (event) =>{
+                   this.setState({
+                       username:event.target.value
+                   })
+               }
+               passwordChange = () =>{
+                   this.setState({
+                       password:event.target.value
+                   })
+               }
+               render(){
+                   return (
+                       <form action="http://www.atguigu.com" onSubmit={this.handleSubmit}>
+                           用户名:<input onChange={this.usernameChange} type="text" name="username"/>
+                           密码:<input onChange={this.passwordChange} type="password"name="password" />
+                           <button>登录</button>
+                       </form>
+                   )
+               }
+           }
+           ReactDOM.render(<Login/>,document.getElementById('test'))
+       </script>
+   </body>
+   </html>
+   ```
+
+   
+
+### 2.3.组件生命周期
+
+#### 2.3.1.旧版本生命周期
+
+1. 引出生命周期
+
+   ```react
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Document</title>
+   </head>
+   <body>
+       <!-- 准备好一个容器 -->
+       <div id="test"></div>
+       <!-- react核心库 -->
+       <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+       <!-- 引入react-dom,用于支持react操作Dom -->
+       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+       <!-- 用于将jsx转化为js -->
+       <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+       <script type="text/babel">
+           //1.创建类式组件
+           class Life extends React.Component{
+               state  = {
+                   opacity:0.5,
+               }
+               //组件挂载完毕调用(只触发一次)
+               componentDidMount(){
+                   let {opacity} = this.state
+                   this.timer = setInterval(() =>{
+                       opacity -= 0.1
+                       if(opacity<=0) opacity = 1
+                       this.setState({opacity})
+                   },200)
+               }
+   
+               //组件将要卸载时调用
+               componentWillUnmount(){
+                   //清除定时器
+                   clearInterval(this.timer)
+               }
+               death = () =>{
+                   //卸载组件
+                   ReactDOM.unmountComponentAtNode(document.getElementById('test'))
+               }
+               render(){
+                   const {opacity} = this.state
+                   return (
+                       <div>
+                           <h2 style={{opacity}} >React学不会怎么办?</h2>
+                           <button onClick={this.death}>不活了</button>                        
+                       </div>
+                   )
+               }
+           }
+           //渲染组件到页面
+           ReactDOM.render(<Life/>,document.getElementById('test'))
+       </script>
+   </body>
+   </html>
+   ```
+
+2. 组件挂载流程
+
+   1. 旧版本流程图
+
+      ![](https://img-blog.csdnimg.cn/20200702114631693.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE3NDgzMTk=,size_16,color_FFFFFF,t_70)
+
+      ![](D:\myWork\learn-web@2022\react\learnReact\资源\生命周期(旧).png)
+
+   2. 组件初始化生命周期过程
+
+      ```react
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Document</title>
+      </head>
+      <body>
+          <!-- 准备好一个容器 -->
+          <div id="test"></div>
+          <!-- react核心库 -->
+          <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+          <!-- 引入react-dom,用于支持react操作Dom -->
+          <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+          <!-- 用于将jsx转化为js -->
+          <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+          <script type="text/babel">
+              //1.创建类式组件
+              class Count extends React.Component{
+                  constructor(props){
+                      console.log('count---constructor')
+                      super(props)
+                      this.state = {
+                          count:0
+                      }
+                  }
+                  //组件将要挂载时调用
+                  componentWillMount(){
+                      console.log('count---componentWillMount')
+                  }
+      
+                  //组件挂载完毕调用
+                  componentDidMount(){
+                      console.log('count---componentDidMount')
+                  }
+      
+                  //组件将要卸载时调用
+                  componentWillUnmount(){
+                      console.log('count---componentWillUnmount')
+                  }
+                  handleAddNum = () =>{
+                      let {count} = this.state
+                      this.setState({
+                          count:count+1
+                      })
+                  }
+                  render(){
+                      console.log('count---render')
+                      const {count} = this.state
+                      return (
+                          <div>
+                              <h1>当前求和为:{count}</h1>
+                              <button onClick={this.handleAddNum}>点我+1</button>&nbsp;
+                          </div>
+                      )
+                  }
+              }
+              //渲染组件到页面
+              ReactDOM.render(<Count/>,document.getElementById('test'))
+          </script>
+      </body>
+      </html>
+      ```
+
+      总结:组件渲染时生命周期过程为constructor->componentWillMount->render->componentDidMount
+
+   3. 组件卸载过程
+
+      总结:componentWillUnmount ->unmountComponentAtNode
+
+   4. 组件状态更新过程
+
+      ```react
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Document</title>
+      </head>
+      <body>
+          <!-- 准备好一个容器 -->
+          <div id="test"></div>
+          <!-- react核心库 -->
+          <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+          <!-- 引入react-dom,用于支持react操作Dom -->
+          <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+          <!-- 用于将jsx转化为js -->
+          <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+          <script type="text/babel">
+              //1.创建类式组件
+              class Count extends React.Component{
+                  constructor(props){
+                      console.log('count---constructor')
+                      super(props)
+                      this.state = {
+                          count:0
+                      }
+                  }
+                  //组件将要挂载时调用
+                  componentWillMount(){
+                      console.log('count---componentWillMount')
+                  }
+      
+                  //组件挂载完毕调用
+                  componentDidMount(){
+                      console.log('count---componentDidMount')
+                  }
+      
+                  //组件将要卸载时调用
+                  componentWillUnmount(){
+                      console.log('count---componentWillUnmount')
+                  }
+                  //判断组件是否需要更新默认返回true需要更新,返回false则不会更新
+                  shouldComponentUpdate(){
+                      console.log('count---shouldComponentUpdate')
+                      return true
+                  }
+                  //组件将要更新
+                  componentWillUpdate(){
+                      console.log('count-componentWillUpdate')
+                  }
+                  //组件更新完毕
+                  componentDidUpdate(){
+                      console.log('count---componentDidUpdate')
+                  }
+      
+                  handleAddNum = () =>{
+                      let {count} = this.state
+                      this.setState({
+                          count:count+1
+                      })
+                  }
+                  death = () =>{
+                      //卸载组件
+                      ReactDOM.unmountComponentAtNode(document.getElementById('test'))
+                      console.log('count---unmountComponentAtNode')
+                  }
+                  render(){
+                      console.log('count---render')
+                      const {count} = this.state
+                      return (
+                          <div>
+                              <h1>当前求和为:{count}</h1>
+                              <button onClick={this.handleAddNum}>点我+1</button>&nbsp;
+                              <button onClick={this.death}>卸载组件</button>
+                          </div>
+                      )
+                  }
+              }
+              //渲染组件到页面
+              ReactDOM.render(<Count/>,document.getElementById('test'))
+          </script>
+      </body>
+      </html>
+      ```
+
+      组件更新流程为
+
+      shouldComponentUpdate ->componentWillUpdate->render->componentDidUpdate\
+
+   5. 强制更新流程
+
+      ```react
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Document</title>
+      </head>
+      <body>
+          <!-- 准备好一个容器 -->
+          <div id="test"></div>
+          <!-- react核心库 -->
+          <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+          <!-- 引入react-dom,用于支持react操作Dom -->
+          <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+          <!-- 用于将jsx转化为js -->
+          <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+          <script type="text/babel">
+              //1.创建类式组件
+              class Count extends React.Component{
+                  constructor(props){
+                      console.log('count---constructor')
+                      super(props)
+                      this.state = {
+                          count:0
+                      }
+                  }
+                  //组件将要挂载时调用
+                  componentWillMount(){
+                      console.log('count---componentWillMount')
+                  }
+      
+                  //组件挂载完毕调用
+                  componentDidMount(){
+                      console.log('count---componentDidMount')
+                  }
+      
+                  //组件将要卸载时调用
+                  componentWillUnmount(){
+                      console.log('count---componentWillUnmount')
+                  }
+                  //判断组件是否需要更新默认返回true需要更新,返回false则不会更新
+                  shouldComponentUpdate(){
+                      console.log('count---shouldComponentUpdate')
+                      return false
+                  }
+                  //组件将要更新
+                  componentWillUpdate(){
+                      console.log('count-componentWillUpdate')
+                  }
+                  //组件更新完毕
+                  componentDidUpdate(){
+                      console.log('count---componentDidUpdate')
+                  }
+      
+                  handleAddNum = () =>{
+                      let {count} = this.state
+                      this.setState({
+                          count:count+1
+                      })
+                  }
+                  //卸载组件
+                  death = () =>{
+                      ReactDOM.unmountComponentAtNode(document.getElementById('test'))
+                      console.log('count---unmountComponentAtNode')
+                  }
+                  //强制更新按钮回调
+                  force = () =>{
+                      this.forceUpdate()
+                  }
+                  render(){
+                      console.log('count---render')
+                      const {count} = this.state
+                      return (
+                          <div>
+                              <h1>当前求和为:{count}</h1>
+                              <button onClick={this.handleAddNum}>点我+1</button>&nbsp;
+                              <button onClick={this.death}>卸载组件</button>
+                              <button onClick={this.force}>不更改任何状态数据强制更新</button>
+                          </div>
+                      )
+                  }
+              }
+              //渲染组件到页面
+              ReactDOM.render(<Count/>,document.getElementById('test'))
+          </script>
+      </body>
+      </html>
+      ```
+
+      总结:强制更新流程forceUpdate ->componentWillUpdate->-render->componentDidUpdate
+
+   6. 父组件render流程
+
+      ```react
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Document</title>
+      </head>
+      <body>
+          <!-- 准备好一个容器 -->
+          <div id="test"></div>
+          <!-- react核心库 -->
+          <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+          <!-- 引入react-dom,用于支持react操作Dom -->
+          <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+          <!-- 用于将jsx转化为js -->
+          <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+          <script type="text/babel">
+              //1.创建组件
+              class Father extends React.Component{
+                  state = {
+                      carName:'奔驰'
+                  }
+                  changeCar = () =>{
+                      this.setState({carName:'奥拓'})
+                  }
+                  render(){
+                      return (
+                          <div>
+                              <div>我是Father组件</div>
+                              <button onClick={this.changeCar}>换车</button>
+                              <Child carName={this.state.carName}/>
+                          </div>
+                      )
+                  }
+              }
+              class Child extends React.Component{
+                  //组件将要接受新的props
+                  componentWillReceiveProps(props){
+                      console.log('Child---componentWillReceiveProps',props)
+                  }
+                  //控制组件更新的阀门
+                  shouldComponentUpdate(){
+                      console.log('Child---shouldComponentUpdate')
+                      return true
+                  }
+                  //组件将要更新
+                  componentWillUpdate(){
+                      console.log('Child-componentWillUpdate')
+                  }
+                  //组件更新完毕
+                  componentDidUpdate(){
+                      console.log('Child---componentDidUpdate')
+                  }            
+                  render(){
+                      const {carName} = this.props
+                      return (
+                          <div>我是Child组件,我的车为{carName}</div>
+                      )
+                  }
+              }       
+              //渲染组件到页面
+              ReactDOM.render(<Father/>,document.getElementById('test'))
+          </script>
+      </body>
+      </html>
+      ```
+
+      总结:当父组件初次渲染时并不会触发子组件componentWillReceiveProps方法当父组件传递给子组件props变化时，会调用子组件的更新。执行过程为:
+
+      componentWillReceiveProps->shouldComponentUpdate->componentWillUpdate->componentDidUpdate
+
+   7. 总结
+
+      1. **初始化阶段**：由ReactDOM.rnder()触发一次渲染
+         1. constructor()
+         2. componentWillMount()
+         3. render()
+         4. componentDidMount()
+      2. **更新阶段**：由组件内部this.setState()或父组件更新render()触发
+         1. shouldComponentUpdate()
+         2. componentWillUpdate()
+         3. render()
+         4. componentDidUpdate()
+      3. **卸载组件**:由ReactDOM.unmountComponentAtNode()触发
+         1. componentWillUnmount()
+
+      
+
+#### 2.3.2.新版本生命周期
+

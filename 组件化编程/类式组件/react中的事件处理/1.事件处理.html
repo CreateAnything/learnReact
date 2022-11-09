@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="test"></div>
+    <!-- react核心库 -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <!-- 引入react-dom,用于支持react操作Dom -->
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- 用于将jsx转化为js -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+        /*
+            react中的事件处理
+            1.通过onXxx属性指定事件处理函数(注意大小写)
+                a.React使用的是自定义(合成)事件，而不是使用的原生Dom事件 ---为了更好的兼容性
+                b.React中的事件是通过事件委托方式处理的(委托给组件最外层元素)---事件委托的方式效率更高
+            2.通过Event.target得到发生事件的Dom元素对象---- 不要过度使用ref(发生事件的元素正好是你要操作的元素就可以使用事件委托)
+        */
+        //1.创建类式组件
+        class MyComponent extends React.Component{
+            //创建ref容器
+            myRef = React.createRef()
+            myRef2 = React.createRef()
+
+            showData = () =>{
+                console.log(this.myRef.current.value)
+            }
+
+            inputBlur = (event) =>{//发生事件的元素正好是你要操作的元素就可以使用事件委托
+                console.log(event.target.value)
+            }
+            render(){
+                return (
+                    <div>
+                        <input ref={this.myRef} type="text" placeholder="点击按钮提示数据"/>
+                        <button onClick={this.showData}>点我提示左侧数据</button>  
+                        <input onBlur = {this.inputBlur} type="text" placeholder="失去焦点提示数据"/>             
+                    </div>
+                )
+            }
+        }
+        ReactDOM.render(<MyComponent/>,document.getElementById('test'))
+    </script>
+</body>
+</html>

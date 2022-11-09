@@ -18,13 +18,25 @@
     <script type="text/babel">
         //1.创建类式组件
         class MyComponent extends React.Component{
+            showData = () =>{
+              const {input1} = this.refs
+              alert(input1.value)
+            }
+            
+            showData2 = () =>{
+              const {input2} = this.refs
+              alert(input2.value)
+            }
             render(){
                 return (
-                    <h1>我是类式组件</h1>
+                    <div>
+                        <input ref="input1" type="text" placeholder="点击按钮提示数据"/>
+                        <button onClick={this.showData}>点我提示左侧数据</button>  
+                        <input ref="input2" onBlur={this.showData2} type="text" placeholder="失去焦点提示数据"/>                
+                    </div>
                 )
             }
         }
-        //渲染组件到页面
         ReactDOM.render(<MyComponent/>,document.getElementById('test'))
     </script>
 </body>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="test"></div>
+    <!-- react核心库 -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <!-- 引入react-dom,用于支持react操作Dom -->
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- 用于将jsx转化为js -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+        //1.受控组件(随着输入就可以维护到状态中，使用的话就可以取出来)
+        class Login extends React.Component{
+            state = {
+                username:'',
+                password:''
+            }
+            handleSubmit = (event) =>{
+                event.preventDefault()
+                const {username,password} = this.state
+                alert(`你的账号为${username},密码为${password}`)
+            }
+
+            //柯里化
+            saveFiled = (name) =>{
+                return event =>{
+                    this.setState({
+                        [name]:event.target.value
+                    })
+                }
+            }
+            
+            saveFiled2 = (name,event) =>{
+                this.setState({[name]:event.target.value})
+            }
+            render(){
+                return (
+                    <form action="http://www.atguigu.com" onSubmit={this.handleSubmit}>
+                        用户名:<input onChange={this.saveFiled('username')} type="text" name="username"/>
+                        密码:<input onChange={event =>this.saveFiled2('password',event)} type="password"name="password" />
+                        <button>登录</button>
+                    </form>
+                )
+            }
+        }
+        ReactDOM.render(<Login/>,document.getElementById('test'))
+    </script>
+</body>
+</html>
