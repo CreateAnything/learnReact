@@ -1,0 +1,38 @@
+.wrapper{
+    margin-top: 10px;
+    height: 35px;
+    border: 1px solid gainsboro;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding-left: 10px;
+}
+.wrapper .leftFooter{
+    display: flex;
+}
+.wrapper .box{
+    line-height: 30px;
+    font-size: 12px;
+    color: gainsboro;
+}
+.wrapper .box .split{
+    margin: 0 5px;
+}
+.btn:hover{
+    filter: brightness(.8);
+}
+.btn{
+    margin-right: 5px;
+    border-radius: 5px;
+    font-size: 13px;
+    width: 100px;
+    height: 25px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: gainsboro;
+    background-color: #d83b01;
+}

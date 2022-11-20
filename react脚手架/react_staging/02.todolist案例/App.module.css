@@ -1,0 +1,14 @@
+body{
+    background-color: #323130;
+}
+.container{
+    margin-left: 100px;
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid gainsboro;
+    max-height: 600px;
+    box-sizing: border-box;
+    padding: 10px;
+    overflow: auto;
+}

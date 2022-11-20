@@ -1,0 +1,5 @@
+.wrapper{
+    border: 1px solid gainsboro;
+    box-sizing: border-box;
+    padding: 5px;
+}
