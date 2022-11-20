@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="test"></div>
+    <!-- react核心库 -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <!-- 引入react-dom,用于支持react操作Dom -->
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- 用于将jsx转化为js -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+        //1.创建类式组件
+        class Count extends React.Component{
+            constructor(props){
+                console.log('count---constructor')
+                super(props)
+                this.state = {
+                    count:0
+                }
+            }
+            //组件将要挂载时调用
+            UNSAFE_componentWillMount(){
+                console.log('count---UNSAFE_componentWillMoun')
+            }
+
+            //组件挂载完毕调用
+            componentDidMount(){
+                console.log('count---componentDidMount')
+            }
+
+            //组件将要卸载时调用
+            componentWillUnmount(){
+                console.log('count---componentWillUnmount')
+            }
+            
+            //判断组件是否需要更新默认返回true需要更新,返回false则不会更新
+            shouldComponentUpdate(){
+                console.log('count---shouldComponentUpdate')
+                return true
+            }
+            
+            //组件将要更新
+            UNSAFE_componentWillUpdate(){
+                console.log('count-UNSAFE_componentWillUpdate')
+            }
+            
+            //组件更新完毕
+            componentDidUpdate(){
+                console.log('count---componentDidUpdate')
+            }
+
+            handleAddNum = () =>{
+                let {count} = this.state
+                this.setState({
+                    count:count+1
+                })
+            }
+            death = () =>{
+                //卸载组件
+                ReactDOM.unmountComponentAtNode(document.getElementById('test'))
+                console.log('count---unmountComponentAtNode')
+            }
+            render(){
+                console.log('count---render')
+                const {count} = this.state
+                return (
+                    <div>
+                        <h1>当前求和为:{count}</h1>
+                        <button onClick={this.handleAddNum}>点我+1</button>&nbsp;
+                        <button onClick={this.death}>卸载组件</button>
+                    </div>
+                )
+            }
+        }
+        //2.创建子组件
+        class Father extends React.Component{
+            state = {
+                carName:'奔驰'
+            }
+            changeCar = () =>{
+                this.setState({carName:'奥拓'})
+            }
+            render(){
+                return (
+                    <div>
+                        <div>我是Father组件</div>
+                        <button onClick={this.changeCar}>换车</button>
+                        <Child carName={this.state.carName}/>
+                    </div>
+                )
+            }
+        }
+        class Child extends React.Component{
+            //组件将要接受新的props
+            UNSAFE_componentWillReceiveProps(props){
+                console.log('Child--- UNSAFE_componentWillReceiveProp',props)
+            }
+            //控制组件更新的阀门
+            shouldComponentUpdate(){
+                console.log('Child---shouldComponentUpdate')
+                return true
+            }
+            //组件将要更新
+            UNSAFE_componentWillUpdate(){
+                console.log('Child-componentWillUpdate')
+            }
+            //组件更新完毕
+            componentDidUpdate(){
+                console.log('Child---componentDidUpdate')
+            }            
+            render(){
+                const {carName} = this.props
+                return (
+                    <div>我是Child组件,我的车为{carName}</div>
+                )
+            }
+        }         
+        
+        //渲染组件到页面
+        ReactDOM.render(<Count/>,document.getElementById('test'))
+    </script>
+</body>
+</html>

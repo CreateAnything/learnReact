@@ -1493,19 +1493,1042 @@
    7. 总结
 
       1. **初始化阶段**：由ReactDOM.rnder()触发一次渲染
+
          1. constructor()
+
          2. componentWillMount()
+
          3. render()
+
          4. componentDidMount()
+
+            常用:一般在这钩子中做一些初始化的事,列如:开启定时器,发送网络请求,订阅消息
+
       2. **更新阶段**：由组件内部this.setState()或父组件更新render()触发
+
          1. shouldComponentUpdate()
          2. componentWillUpdate()
          3. render()
          4. componentDidUpdate()
+
       3. **卸载组件**:由ReactDOM.unmountComponentAtNode()触发
+
          1. componentWillUnmount()
+
+            一般在这个钩子中做一些收尾的事,列如:关闭定时器，取消订阅消息
 
       
 
 #### 2.3.2.新版本生命周期
+
+1. 生命周期图
+
+    ![https://img-blog.csdnimg.cn/20200702115139495.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE3NDgzMTk=,size_16,color_FFFFFF,t_70](https://img-blog.csdnimg.cn/20200702115139495.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE3NDgzMTk=,size_16,color_FFFFFF,t_70)
+   
+2. getDerivedStateFormProps的使用(极低)
+
+   ```react
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Document</title>
+   </head>
+   <body>
+       <!-- 准备好一个容器 -->
+       <div id="test"></div>
+       <!-- react核心库 -->
+       <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+       <!-- 引入react-dom,用于支持react操作Dom -->
+       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+       <!-- 用于将jsx转化为js -->
+       <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+       <script type="text/babel">
+           //1.创建类式组件
+           class Count extends React.Component{
+               constructor(props){
+                   console.log('count---constructor')
+                   super(props)
+                   this.state = {
+                       count:0
+                   }
+               }
+               //若state的值任何时候都取决于props可以使用getDerivedStateFromProps
+               static getDerivedStateFromProps(props,state){
+                   console.log('getDerivedStateFromProps',props,state)
+                   return null
+               }
+   
+               //组件挂载完毕调用
+               componentDidMount(){
+                   console.log('count---componentDidMount')
+               }
+   
+               //组件将要卸载时调用
+               componentWillUnmount(){
+                   console.log('count---componentWillUnmount')
+               }
+               
+               //判断组件是否需要更新默认返回true需要更新,返回false则不会更新
+               shouldComponentUpdate(){
+                   console.log('count---shouldComponentUpdate')
+                   return true
+               }           
+               
+               //组件更新完毕
+               componentDidUpdate(){
+                   console.log('count---componentDidUpdate')
+               }
+   
+               handleAddNum = () =>{
+                   let {count} = this.state
+                   this.setState({
+                       count:count+1
+                   })
+               }
+               death = () =>{
+                   //卸载组件
+                   ReactDOM.unmountComponentAtNode(document.getElementById('test'))
+                   console.log('count---unmountComponentAtNode')
+               }
+               render(){
+                   console.log('count---render')
+                   const {count} = this.state
+                   return (
+                       <div>
+                           <h1>当前求和为:{count}</h1>
+                           <button onClick={this.handleAddNum}>点我+1</button>&nbsp;
+                           <button onClick={this.death}>卸载组件</button>
+                       </div>
+                   )
+               }
+           }       
+           
+           //渲染组件到页面
+           ReactDOM.render(<Count count={199}/>,document.getElementById('test'))
+       </script>
+   </body>
+   </html>
+   ```
+
+3. getSnapshotBeforeUpdate的使用
+
+```react
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="test"></div>
+    <!-- react核心库 -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <!-- 引入react-dom,用于支持react操作Dom -->
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- 用于将jsx转化为js -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+        //1.创建类式组件
+        class Count extends React.Component{
+            constructor(props){
+                console.log('count---constructor')
+                super(props)
+                this.state = {
+                    count:0
+                }
+            }
+            //若state的值任何时候都取决于props可以使用getDerivedStateFromProps
+            static getDerivedStateFromProps(props,state){
+                console.log('getDerivedStateFromProps',props,state)
+                return null
+            }
+
+            //组件挂载完毕调用
+            componentDidMount(){
+                console.log('count---componentDidMount')
+            }
+
+            //组件将要卸载时调用
+            componentWillUnmount(){
+                console.log('count---componentWillUnmount')
+            }
+            
+            //判断组件是否需要更新默认返回true需要更新,返回false则不会更新
+            shouldComponentUpdate(){
+                console.log('count---shouldComponentUpdate')
+                return true
+            }           
+            //在更新之前获取快照
+            getSnapshotBeforeUpdate(state){
+                console.log('count---getSnapshotBeforeUpdate')
+                return 'atguigu'//此处返回的值会在componentDidUpdate第三个参数中接收
+            }
+            //组件更新完毕
+            componentDidUpdate(preProps,preState,snapshotValue){
+                console.log('count---componentDidUpdate',preProps,preState,snapshotValue)
+            }
+
+            handleAddNum = () =>{
+                let {count} = this.state
+                this.setState({
+                    count:count+1
+                })
+            }
+            death = () =>{
+                //卸载组件
+                ReactDOM.unmountComponentAtNode(document.getElementById('test'))
+                console.log('count---unmountComponentAtNode')
+            }
+            render(){
+                console.log('count---render')
+                const {count} = this.state
+                return (
+                    <div>
+                        <h1>当前求和为:{count}</h1>
+                        <button onClick={this.handleAddNum}>点我+1</button>&nbsp;
+                        <button onClick={this.death}>卸载组件</button>
+                    </div>
+                )
+            }
+        }       
+        
+        //渲染组件到页面
+        ReactDOM.render(<Count count={199}/>,document.getElementById('test'))
+    </script>
+</body>
+</html>
+```
+
+实际应用场景
+
+```react
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .list{
+            width: 200px;
+            height: 150px;
+            background-color:black;
+            overflow: auto;
+        }
+        .news{
+            width: 100%;
+            border-bottom: 1px solid white;
+            line-height: 30px;
+            height: 30px;
+            color: white;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 准备好一个容器 -->
+    <div id="test"></div>
+    <!-- react核心库 -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <!-- 引入react-dom,用于支持react操作Dom -->
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- 用于将jsx转化为js -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+        //1.创建类式组件
+        class NewsList extends React.Component{
+            state = {
+                newsArr:[]
+            }
+            conRef = React.createRef()
+            componentDidMount(){
+                setInterval(() =>{
+                    const {newsArr} = this.state
+                    const news = `新闻${newsArr.length+1}`
+                    this.setState({
+                        newsArr:[news,...newsArr]
+                    })
+                },1000)
+            }
+
+            getSnapshotBeforeUpdate(){
+                return this.conRef.current.scrollHeight
+            }
+
+            componentDidUpdate(preProps,preState,height){
+                const distance =  this.conRef.current.scrollHeight - height
+                this.conRef.current.scrollTop += distance
+            }
+            render(){
+                return (
+                    <div  ref={this.conRef} className="list">
+                        {
+                            this.state.newsArr.map((item,index) =>{
+                                return <div key={index} className="news">{item}</div>
+                            })
+                        }
+                    </div>
+                )
+            }
+        }       
+        
+        //渲染组件到页面
+        ReactDOM.render(<NewsList />,document.getElementById('test'))
+    </script>
+</body>
+</html>
+```
+
+总结
+
+1. 新版本生命周期废除了旧版本三个生命周期componentWillMount,componentWillUpdate,componentWillReceiveProps.若在新版本中使用需要加UNSAFE_的前缀
+
+2. 新版本的**初始化过程**为:由React.render()触发---初次渲染
+
+   constructor() ->getDerivedStateFromProps()->render()->componentDidMount
+
+3. 新版本**更新过程**:由组件内部this.setState()或父组件重新render触发
+
+   getDerivedStateFromProps()->shouldComponentUpdate()->render()->getSnapshotBeforeUpdate()->getSnapshotBeforeUpdate()
+
+4. **卸载过程**:由ReactDOM.unmountComponentAtNode()触发
+
+   1.componentWillUnmount()常用->一般在这个钩子里面做一些收尾的事,l比如关闭定时器,取消订阅消息\
+
+5. 重要的勾子
+
+   1. render() 初始化渲染或更新渲染调用
+   2. componentDidMound()->开启监听发送请求
+   3. componentWillUnmount()->做一些收尾的事,l比如关闭定时器,取消订阅消息
+
+6. 即将**废弃**的钩子
+
+   1. componentWillMount()
+
+   2. componentWillUpdate()
+
+   3. componentWillReceiveProps()
+
+      现在使用会出现警告,下一个大版本需要加上UNSAFE_前缀才能使用,以后可能会彻底废弃不建议使用
+
+## 3.DOM的Diff算法
+
+## 4.React应用
+
+### 4.1利用脚手架创建react项目
+
+1. 全局安装:npm install -g create-react-app
+2. 切换到你想创建项目的目录,使用命令:create-react-app xx (项目名称)
+
+### 4.2.脚手架文件介绍
+
+![](D:\myWork\learn-web@2022\react\learnReact\资源\react_public\QQ图片20221110194456.png)
+
+1. public文件夹下一般放静态资源(图片,图标,css等)
+
+2. src文件夹一般放项目源代码
+
+   ![](D:\myWork\learn-web@2022\react\learnReact\资源\react_public\QQ图片20221110194706.png)
+
+   1. App.js 为一个react根组件
+
+   2. App.test,js 一个测试文件
+
+   3. index.js项目入口文件
+
+      ![](D:\myWork\learn-web@2022\react\learnReact\资源\react_public\QQ图片20221110210136.png)
+
+      1. React.StrictMode:包裹后可以验证react组件写法是否合理
+      2. reportWebVitals:用于记录页面上性能的
+
+   4. setupTests.js应用的整体测试---组件单元测试的文件(需要jest---dom)
+
+   5. reportWebVitals.js ---页面性能分析文件(需要web-vitals库的支持)
+
+      
+
+### 4.3.创建一个简单的hello组件
+
+![](D:\myWork\learn-web@2022\react\learnReact\资源\react_public\QQ图片20221110213824.png)
+
+![](D:\myWork\learn-web@2022\react\learnReact\资源\react_public\QQ图片20221110213857.png)
+
+
+
+### 4.4.react路由的使用
+
+#### 4.4.1.react路由v5的使用
+
+##### 4.4.1.1.如何使用路由
+
+1. 执行npm i react-router-dom@5.3.1 下载路由插件
+
+2. 在组件中使用路由
+
+   ```react
+   import React, { Component } from 'react'
+   import { NavLink, Route, Switch } from 'react-router-dom'
+   import AppStyle from './App.module.css'
+   import About from './component/abount/index'
+   import Home from './component/home/index'
+   export default class App extends Component {
+     render() {
+       return (
+         <div style={{display:'flex',padding:'100px'}}>
+           <div className={AppStyle.left}>
+             <NavLink  to='/home' className="btn  btn-primary active">Home</NavLink>
+             <NavLink  to='/about' style={{marginTop:'10px'}} className="btn  btn-primary">About</NavLink>
+           </div>
+           <div className={AppStyle.right}>
+                 <Switch>
+                     <Route path='/home' component={Home}/>
+                     <Route path='/about' component={About}/>
+                 </Switch>
+           </div>
+         </div>
+       )
+     }
+   }
+   
+   ```
+
+   ```react
+   import React from "react";
+   import ReactDOM from "react-dom";
+   import { BrowserRouter } from 'react-router-dom';
+   import App from './App';
+   
+   ReactDOM.render(
+       <BrowserRouter>
+           <App/>
+       </BrowserRouter>
+       ,document.getElementById('root'))
+   ```
+
+   路由使用必须在使用组件范围内包裹BrowserRouter或HashRouter
+
+   navLink组件中className选中默认会出现active类类名，该类名也可通过属性activeClassName进行修改
+
+   Switch组件匹配path以后就不会匹配相同的路一个路径只匹配一次，可以调高效率
+
+##### 4.4.1.2.自定义navLink
+
+```react
+import React, { Component } from 'react'
+import { NavLink } from 'react-router-dom/cjs/react-router-dom.min'
+
+export default class MyNavLink extends Component {
+  render() {
+    return (
+        <NavLink className="btn  btn-primary" {...this.props}/>
+    )
+  }
+}
+```
+
+1. 被Route组件注册的组件可以在内部props获取到路由的相关信息
+
+   ![](D:\myWork\learn-web@2022\react\learnReact\资源\react_public\QQ图片20221119110048.png)
+
+##### 4.4.1.3.路由的模糊匹配和严格匹配
+
+- 模糊匹配
+
+  ```react
+  import React, { Component } from 'react'
+  import { Route, Switch } from 'react-router-dom'
+  import { Redirect } from 'react-router-dom/cjs/react-router-dom.min'
+  import AppStyle from './App.module.css'
+  import About from './component/abount/index'
+  import Home from './component/home/index'
+  import MyNavLink from './component/mylink'
+  export default class App extends Component {
+    render() {
+      return (
+        <div style={{display:'flex',padding:'100px'}}>
+          <div className={AppStyle.left}>
+            <MyNavLink  to='/home/aaa'>Home</MyNavLink>
+            <MyNavLink  style={{marginTop:'10px'}} to='/about'>About</MyNavLink>
+          </div>
+          <div className={AppStyle.right}>
+                <Switch>
+                    <Route  path='/home' component={Home}/>
+                    <Route  path='/about' component={About}/>
+                </Switch>
+          </div>
+        </div>
+      )
+    }
+  }
+  
+  ```
+
+  默认使用的是模糊匹配(简单记:{输入的路径}必须要包含{匹配的路径},且顺序要一致)
+
+- 严格匹配
+
+  ```react
+  import React, { Component } from 'react'
+  import { Route, Switch } from 'react-router-dom'
+  import { Redirect } from 'react-router-dom/cjs/react-router-dom.min'
+  import AppStyle from './App.module.css'
+  import About from './component/abount/index'
+  import Home from './component/home/index'
+  import MyNavLink from './component/mylink'
+  export default class App extends Component {
+    render() {
+      return (
+        <div style={{display:'flex',padding:'100px'}}>
+          <div className={AppStyle.left}>
+            <MyNavLink  to='/home/aaa'>Home</MyNavLink>
+            <MyNavLink  style={{marginTop:'10px'}} to='/about'>About</MyNavLink>
+          </div>
+          <div className={AppStyle.right}>
+                <Switch>
+                    <Route  exact path='/home' component={Home}/>
+                    <Route  exact path='/about' component={About}/>
+                </Switch>
+          </div>
+        </div>
+      )
+    }
+  }
+  
+  ```
+
+  exact={true}开启严格匹配
+
+  严格匹配不要随便开启,需要时候再打开,有些时候开启会导致无法继续匹配二级路由.(使用的时候需要慎重考虑是否符合自己的需求)
+
+##### 4.4.1.4.路由重定向Redirect的使用
+
+```react
+import React, { Component } from 'react'
+import { Route, Switch } from 'react-router-dom'
+import { Redirect } from 'react-router-dom/cjs/react-router-dom.min'
+import AppStyle from './App.module.css'
+import About from './component/abount/index'
+import Home from './component/home/index'
+import MyNavLink from './component/mylink'
+export default class App extends Component {
+  render() {
+    return (
+      <div style={{display:'flex',padding:'100px'}}>
+        <div className={AppStyle.left}>
+          <MyNavLink  to='/home/aaa'>Home</MyNavLink>
+          <MyNavLink  style={{marginTop:'10px'}} to='/about'>About</MyNavLink>
+        </div>
+        <div className={AppStyle.right}>
+              <Switch>
+                  <Route  path='/home' component={Home}/>
+                  <Route  path='/about' component={About}/>
+                  <Redirect to='/home'/>
+              </Switch>
+        </div>
+      </div>
+    )
+  }
+}
+```
+
+##### 4.4.1.5.嵌套路由的使用
+
+```react
+import React, { Component } from 'react'
+import { Route, Switch } from 'react-router-dom'
+import { Redirect } from 'react-router-dom/cjs/react-router-dom.min'
+import AppStyle from './App.module.css'
+import About from './component/abount/index'
+import Home from './component/home/index'
+import MyNavLink from './component/mylink'
+export default class App extends Component {
+  render() {
+    return (
+      <div style={{display:'flex',padding:'100px'}}>
+        <div className={AppStyle.left}>
+          <MyNavLink  to='/home/aaa'>Home</MyNavLink>
+          <MyNavLink  style={{marginTop:'10px'}} to='/about'>About</MyNavLink>
+        </div>
+        <div className={AppStyle.right}>
+              <Switch>
+                  <Route  path='/home' component={Home}/>
+                  <Route  path='/about' component={About}/>
+                  <Redirect to='/home'/>
+              </Switch>
+        </div>
+      </div>
+    )
+  }
+}
+
+```
+
+```react
+import React, { Component } from 'react'
+import { Redirect, Route, Switch } from 'react-router-dom'
+import Message from '../message/index'
+import MyNavLink from '../mylink/index'
+import News from '../news/index'
+export default class Home extends Component {
+  render() {
+    return (
+      <div>
+        <div className="card">
+          <div className="card-body">
+              <div className="btn-group" role="group" aria-label="Basic mixed styles example" style={{marginBottom:'10px'}}>
+                  <MyNavLink to='/home/news'>news</MyNavLink>
+                  <MyNavLink to='/home/message' style={{marginLeft:'3px'}}>message</MyNavLink>
+              </div>
+              <div>
+                <Switch>
+                   <Route path='/home/news' component={News}/>
+                   <Route path='/home/message' component={Message}/>
+                   <Redirect to='/home/news'/>
+                </Switch>
+              </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+}
+
+```
+
+##### 4.4.1.6.向嵌套路由传参
+
+1. 传递params参数
+
+   ```react
+   import React, { Component } from 'react'
+   import { Link, Route } from 'react-router-dom'
+   import Detail from './detail'
+   export default class Message extends Component {
+     state = {
+       messageArr:[
+         {
+           id:'01',
+           title:'消息1'
+         },
+         {
+           id:'02',
+           title:'消息2'
+         },
+         {
+           id:'03',
+           title:'消息3'
+         },
+         {
+           id:'04',
+           title:'消息4'
+         }
+       ]
+     }
+     render() {
+       const {messageArr} = this.state
+       return (
+         <div>
+           <ul className="list-group">
+             {
+               messageArr.map(msg =>{
+                 return (
+                   // {向路由组件传递params参数}
+                   <Link key={msg.id} to={`/home/message/detail/${msg.id}/${msg.title}`} className="list-group-item">{msg.title}</Link>
+                 )
+               })
+             }
+           </ul>
+           <hr/>
+           {/* {声明接受params参数} */}
+           <Route  path="/home/message/detail/:id/:title" component={Detail}/>     
+         </div>
+       )
+     }
+   }
+   
+   ```
+
+   ```react
+   import React, { Component } from 'react'
+   const data = [
+     {id:'01',content:'你好中国1'},
+     {id:'02',content:'你好中国2'},
+     {id:'03',content:'你好中国3'},
+     {id:'04',content:'你好中国4'}
+   ]
+   export default class Detail extends Component {
+     render() {
+       console.log(this.props)
+       const {id,title} = this.props.match.params
+       const findRes = data.find(it =>it.id === id)
+       return (
+         <div>
+            <ul>
+               <li>{id}</li>
+               <li>{title}</li>
+               <li>{findRes.content}</li>
+            </ul>
+         </div>
+       )
+     }
+   }
+   
+   ```
+
+   总结:
+
+   - 路由链接(携带参数):<Link to='/demo/test/18'>详情<Link/>
+   - 注册路由(声明参数):<Route path='/demo/test/:id' component={Detail}/>
+   - 接收参数:const {id} = this.props.match.params
+
+2. 传递search参数
+
+   ```react
+   import React, { Component } from 'react'
+   import { Link, Route } from 'react-router-dom'
+   import Detail from './detail'
+   export default class Message extends Component {
+     state = {
+       messageArr:[
+         {
+           id:'01',
+           title:'消息1'
+         },
+         {
+           id:'02',
+           title:'消息2'
+         },
+         {
+           id:'03',
+           title:'消息3'
+         },
+         {
+           id:'04',
+           title:'消息4'
+         }
+       ]
+     }
+     render() {
+       const {messageArr} = this.state
+       return (
+         <div>
+           <ul className="list-group">
+             {
+               messageArr.map(msg =>{
+                 return (
+                   // {像路由传递search参数}
+                   <Link key={msg.id} to={`/home/message/detail/?id=${msg.id}&title=${msg.title}`} className="list-group-item">{msg.title}</Link>
+                 )
+               })
+             }
+           </ul>
+           <hr/>
+           {/* {声明接收search参数(search参数无须声明接收)} */}
+           <Route  path="/home/message/detail" component={Detail}/>     
+         </div>
+       )
+     }
+   }
+   
+   ```
+
+   ```react
+   import qs from 'qs'
+   import React, { Component } from 'react'
+   const data = [
+     {id:'01',content:'你好中国1'},
+     {id:'02',content:'你好中国2'},
+     {id:'03',content:'你好中国3'},
+     {id:'04',content:'你好中国4'}
+   ]
+   export default class Detail extends Component {
+     render() {
+       // {接收search参数}
+       const {search} = this.props.location
+       const {id,title} = qs.parse(search.slice(1))
+       const findRes = data.find(it =>it.id === id)
+       return (
+         <div>
+            <ul>
+               <li>{id}</li>
+               <li>{title}</li>
+               <li>{findRes.content}</li>
+            </ul>
+         </div>
+       )
+     }
+   }
+   
+   ```
+
+   总结
+
+   - 路由链接(携带参数):<Link to='/demo/test/?id=18'>详情<Link/>
+
+   - 注册路由(无需声明,正常注册即可):<Route path='/demo/test' component={Detail}/>
+
+   - 接收参数:const {search} = this.props.location
+
+     备注:获取到的search是urlencoded编码的字符串需要借助qs进行解析:const {id} = qs.parse(search.slice(1))
+
+3. 传递state参数 
+
+   ```react
+   import React, { Component } from 'react'
+   import { Link, Route } from 'react-router-dom'
+   import Detail from './detail'
+   export default class Message extends Component {
+     state = {
+       messageArr:[
+         {
+           id:'01',
+           title:'消息1'
+         },
+         {
+           id:'02',
+           title:'消息2'
+         },
+         {
+           id:'03',
+           title:'消息3'
+         },
+         {
+           id:'04',
+           title:'消息4'
+         }
+       ]
+     }
+     render() {
+       const {messageArr} = this.state
+       return (
+         <div>
+           <ul className="list-group">
+             {
+               messageArr.map(msg =>{
+                 return (
+                   // {向路由传递state参数}
+                   <Link key={msg.id} to={{pathname:'/home/message/detail',state:msg}} className="list-group-item">{msg.title}</Link>
+                 )
+               })
+             }
+           </ul>
+           <hr/>
+           {/* {state参数无需接收}   */}
+           <Route  path="/home/message/detail" component={Detail}/>   
+         </div>
+       )
+     }
+   }
+   
+   ```
+
+   ```react
+   import React, { Component } from 'react'
+   const data = [
+     {id:'01',content:'你好中国1'},
+     {id:'02',content:'你好中国2'},
+     {id:'03',content:'你好中国3'},
+     {id:'04',content:'你好中国4'}
+   ]
+   export default class Detail extends Component {
+     render() {
+       // {接收state参数}
+       const {id,title} = this.props.location.state
+       const findRes = data.find(it =>it.id === id)
+       return (
+         <div>
+            <ul>
+               <li>{id}</li>
+               <li>{title}</li>
+               <li>{findRes.content}</li>
+            </ul>
+         </div>
+       )
+     }
+   }
+   
+   ```
+
+   总结:
+
+   - 路由链接(携带参数):<Link to={{pathname:'/demo/test',state:{id:1,title:'你好啊'}}}>详情</Link>
+
+   - 注册路由(无需声明，正常注册):<Route path='/demo/test' component={Detail}/>
+
+   - 接收参数:this.props.location.state
+
+     接收参数:this.props.location.state
+
+##### 4.4.1.7.路由跳转的两种方式
+
+```react
+import React, { Component } from 'react'
+import { Link, Route } from 'react-router-dom'
+import Detail from './detail'
+export default class Message extends Component {
+  state = {
+    messageArr:[
+      {
+        id:'01',
+        title:'消息1'
+      },
+      {
+        id:'02',
+        title:'消息2'
+      },
+      {
+        id:'03',
+        title:'消息3'
+      },
+      {
+        id:'04',
+        title:'消息4'
+      }
+    ]
+  }
+  replaceShow = (id,title) =>{
+    //replace跳转+携带params参数
+    // this.props.history.replace(`/home/message/detail/${id}/${title}`)
+
+     //replace跳转+携带search参数
+    //  this.props.history.replace(`/home/message/detail/?id=${id}&title=${title}`)
+
+     //replace跳转+携带state参数
+     this.props.history.replace({pathname:'/home/message/detail',state:{id,title}})
+  }
+  pushShow = (id,title) =>{
+     //push+携带params参数
+    // this.props.history.push(`/home/message/detail/${id}/${title}`)
+
+    //push+携带search参数
+    // this.props.history.push(`/home/message/detail/?id=${id}&title=${title}`)
+
+    //push+携带state参数
+    this.props.history.push({pathname:'/home/message/detail',state:{id,title}})
+  }
+  render() {
+    const {messageArr} = this.state
+    return (
+      <div>
+        <ul className="list-group">
+          {
+            messageArr.map(msg =>{
+              return (
+                <div  key={msg.id} style={{display:'flex',marginTop:'5px'}}>
+                  {/* 向路由组件传递params参数 */}
+                  {/* <Link to={`/home/message/detail/${msg.id}/${msg.title}`} className="list-group-item">{msg.title}</Link> */}
+
+                  {/* 像路由传递search参数 */}
+                  {/* <Link key={msg.id} to={`/home/message/detail/?id=${msg.id}&title=${msg.title}`} className="list-group-item">{msg.title}</Link> */}
+
+                  {/* 向路由传递state参数 */}
+                  <Link replace={true} key={msg.id} to={{pathname:'/home/message/detail',state:msg}} className="list-group-item">{msg.title}</Link>                    
+                  
+                  <div className="btn-group" role="group" aria-label="Basic mixed styles example">
+                      <button onClick={() =>this.pushShow(msg.id,msg.title)} type="button" className="btn btn-danger" style={{marginLeft:'5px'}}>push查看</button>
+                      <button onClick={() =>this.replaceShow(msg.id,msg.title)} type="button" className="btn btn-warning" style={{marginLeft:'5px'}} >replace查看</button>
+                  </div>              
+                </div>
+              )
+            })
+          }
+        </ul>
+        <hr/>
+        {/* {声明接受params参数} */}
+        {/* <Route  path="/home/message/detail/:id/:title" component={Detail}/>  */}
+
+        {/* {声明接收search参数(search参数无须声明接收)} */}
+        {/* <Route  path="/home/message/detail" component={Detail}/>    */}
+        
+        {/* {state参数无需接收}   */}
+        <Route  path="/home/message/detail" component={Detail}/>   
+      </div>
+    )
+  }
+}
+
+```
+
+编程式路由导航
+
+借助this.props.history对象身上的Api对操作路由跳转，前进，后退
+
+this.props.history.push()
+
+this.props.history.replace()
+
+this.props.history.goBack()
+
+this.props.history.goForward()
+
+this.props.history.go()
+
+##### 4.4.1.8.withRouter的使用
+
+```react
+import React, { Component } from 'react'
+import { withRouter } from 'react-router-dom'
+class Header extends Component {
+    back = () =>{
+        this.props.history.goBack()
+    }
+    forward = () =>{
+        this.props.history.goForward()
+    }
+    go = () =>{
+        this.props.history.go(-2)
+    }
+    render() {
+        console.log(this.props)
+        return (
+        <div>
+            <div className="btn-group" role="group" aria-label="Basic mixed styles example">
+                <button onClick={this.back} type="button" className="btn btn-danger">回退</button>
+                <button onClick={this.forward} type="button" className="btn btn-warning">前进</button>
+                <button onClick={this.go} type="button" className="btn btn-success">go</button>
+            </div>
+        </div>
+        )
+    }
+}
+//withRouter可以加工一般组件，让一般组件具备路由组件特有的Api
+//withRouter的返回值是一个新的组件
+export default withRouter(Header)
+
+```
+
+##### 4.4.1.9.*BrowserRouter*和HashRouter的区别
+
+1. 底层原理不一样
+
+   BrowserRouter的使用是H5的history Api,不兼容IE9及一下的版本
+
+   HashRouter使用的是URL的哈希值
+
+2. url表现形式不一样
+
+   BrowserRouter的路径中没用#列如:localhst:3000/demo/test
+
+   HashRouter中路径包含#列如:localhost:3000/#/demo/test
+
+3. **刷新后对路由state参数的影响**
+
+   BrowserRouter没用任何影响，因为state保存在history对象中
+
+   HashRouter刷新后会导致state参数的丢失
+
+4. 备注:HashRouter可以解决一些路径错误相关的问题
+
+#### 4.4.2 react路由v6的使用
+
+
+
+
 
