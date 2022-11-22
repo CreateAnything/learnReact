@@ -3266,3 +3266,648 @@ ReactDOM.render(
 2. 全局下载cnpm i serve -g
 3. 执行serve build即可开启一个服务器
 
+#### 6.react扩展
+
+##### 6.1.setState的使用
+
+1. setState的使用
+
+   ```react
+   import React, { Component } from 'react'
+   
+   export default class StateDemo extends Component {
+     state = {
+       count:0
+     }
+     increment = () =>{
+       const {count} = this.state
+       //对象式的setState的第一种写法
+           // this.setState({
+           //     count:count+1
+           // })
+       //对象式的setState第二种写法callback是可选的回调函数他在状态更新完毕和页面render后调用
+       this.setState({count:count+1},() =>{
+           console.log(this.state.count)//此时可以拿到最新的state
+       })
+     }
+     Hanincrement = () =>{
+       /**
+        * 函数式setState
+        * setState(updater,[callback]) ----函数式setState
+        * 1.updater 可以接收到state,props
+        * 2.callback是可选的回调函数,他在状态更新,界面也更新后的render调用后才调用
+        */
+       this.setState((state,props) =>({count:state.count+props.x}))
+     }
+     render() {
+       return (
+         <div>
+           <h1>当前求和为:{this.state.count}</h1>
+           <button onClick={this.increment} type="button" className="btn btn btn-info">对象式点我+1</button>
+           <button onClick={this.Hanincrement} type="button" className="btn btn btn-info">函数式点我+1</button>
+         </div>
+       )
+     }
+   }
+   
+   ```
+
+   总结
+
+   1. 对象式的setState是函数式setState的简写方式(语法糖)
+   2. 使用原则
+      1. 如果新状态不依赖于原状态 =>使用对象方式
+      2. 如果新状态依赖于原状态 =>函数方式
+      3. 如果需要在setState()执行后获取最新数据,要在第二个callback函数中读取
+
+##### 6.2.路由的lazyLoad(懒加载)
+
+1. 如何使用lazy对路由进行懒加载
+
+   ```react
+   import React, { Component, lazy, Suspense } from 'react'
+   import { Route, Switch } from 'react-router-dom'
+   import { Redirect } from 'react-router-dom/cjs/react-router-dom.min'
+   import AppStyle from './App.module.css'
+   import Loading from './component/loading'
+   import MyNavLink from './component/mylink'
+   //懒加载
+   const Home = lazy(() =>import('./component/home'))
+   const About = lazy(() =>import('./component/abount'))
+   export default class App extends Component {
+     render() {
+       return (
+         <div>
+           <div style={{display:'flex',padding:'100px'}}>
+             <div className={AppStyle.left}>
+               <MyNavLink  to='/home/aaa'>Home</MyNavLink>
+               <MyNavLink  style={{marginTop:'10px'}} to='/about'>About</MyNavLink>
+             </div>
+             <div className={AppStyle.right}>
+               <Suspense fallback={<Loading/>}>
+                 <Switch>
+                         <Route  path='/home' component={Home}/>
+                         <Route  path='/about' component={About}/>
+                         <Redirect to='/home'/>
+                 </Switch>
+               </Suspense>
+             </div>
+           </div>
+         </div>
+       )
+     }
+   }
+   ```
+
+   总结:懒加载的组件必须采用const xxx = lazy(() =>import('xxxxx'))的形式引入
+
+   ​		需要懒加载的组件必须通过Suspense组件进行包裹,并指定fallback为一个标签或者组件(作用是在路由懒加载时为了防止网速过慢造成的白屏需要指定一个组件进行空白填充一般为loading组件)
+
+#### 7.reacrHooks的使用
+
+##### 7.1.ReactHooks是什么
+
+1. 为什么会有Hooks?
+
+   介绍Hooks之前，首先要给大家说一下React的组件创建方式，一种是***类组件\***，一种是***纯函数组件\***，并且React团队希望，组件不要变成复杂的容器，最好只是数据流的管道。开发者根据需要，组合管道即可。也就是说**组件的最佳写法应该是函数，而不是类**
+
+   但是我们知道，在以往开发中*类组件*和*纯函数组件*的区别是很大的，纯函数组件有着类组件不具备的多种特点，简单列举几条
+
+   1. 纯函数组件**没有状态**
+   2. 纯函数组件**没有生命周期**
+   3. 纯函数组件没有`this`
+   4. 只能是纯函数
+
+   这就注定，我们所推崇的函数组件，只能做UI展示的功能，涉及到状态的管理与切换，我们不得不用类组件或者redux，但我们知道类组件的也是有缺点的，比如，遇到简单的页面，你的代码会显得很重，并且每创建一个类组件，都要去继承一个React实例，至于Redux,更不用多说，很久之前Redux的作者就说过，“能用React解决的问题就不用Redux”,等等一系列的话。关于React类组件redux的作者又有话说
+
+   1. 大型组件很难拆分和重构，也很难测试。
+   2. 业务逻辑分散在组件的各个方法之中，导致重复逻辑或关联逻辑。
+   3. 组件类引入了复杂的编程模式，比如 render props 和高阶组件
+
+2. 什么是Hooks?
+
+   'Hooks'的单词意思为“钩子”。
+    **React Hooks 的意思是，组件尽量写成纯函数，如果需要外部功能和副作用，就用钩子把外部代码"钩"进来。**而React Hooks 就是我们所说的“钩子”。
+    那么Hooks要怎么用呢？“你需要写什么功能，就用什么钩子”。对于常见的功能，React为我们提供了一些常用的钩子，当然有特殊需要，我们也可以写自己的钩子。下面是React为我们提供的默认的四种最常用钩子
+
+   1. useState()
+   2. userContext()
+   3. userReducer()
+   4. useEffect()
+
+   不同的钩子为函数引入不同的外部功能，我们发现上面四种钩子都带有`use`前缀，React约定，钩子*一律使用* `use`前缀命名。所以，你自己定义的钩子都要命名为useXXX。
+
+##### 7.2.useState的使用
+
+1. 我们知道，纯函数组件没有状态，`useState()`用于为函数组件引入状态
+
+   ```react
+   import { useState } from 'react'
+   export default function Count(){
+       const [count,setCount] = useState(0)
+       const [name,setName] = useState('wmq')
+       function add(){
+           // setCount(count+1)//第一种写法
+           setCount(count =>count+1)
+       }
+       function changeName(){
+           setName('jack')
+       }
+       return (
+           <div>
+               <h2>当前求和为:{count}</h2>
+               <h2>我的名字是:{name}</h2>
+               <button onClick={add}>点我加1</button>
+               <button onClick={changeName}>点我改名</button>
+           </div>
+       )
+   }
+   ```
+
+##### 7.3.useEffect的使用
+
+1. Effect Hook可以让你在函数组件中执行副作用操作(用于模拟类组件中的生命周期钩子)
+
+2. React中的副作用操作
+
+   1. 发ajax请求数据获取
+   2. 设置订阅/启动定时器
+   3. 手动更改真实dom
+
+3. 语法和说明:
+
+   ```react
+   useEffect(() =>{
+       //此时相当于componenDidUpdate()(每次render都会执行)
+   })
+   
+   useEffect(() =>{
+      //此时相当于componentDidMount()(只会在页面加载完执行一次)
+   },[])
+   
+   useEffect(() =>{
+       return () =>{
+           //在返回函数里面的内容可以看作是componentWillUnmount()
+       }
+   })
+   ```
+
+   总结:useEffect Hook可以看作如下三个函数的组合
+
+   1. componentDidMount()
+   2. componentDidUpdate()
+   3. componentWillUnmount()
+
+4. 使用举例
+
+   ```react
+   import { useEffect, useState } from 'react'
+   import ReactDom from 'react-dom'
+   export default function Count(){
+       const [count,setCount] = useState(0)
+       const [name,setName] = useState('wmq')
+       function add(){
+           // setCount(count+1)//第一种写法
+           setCount(count =>count+1)    
+       }
+   
+       function changeName(){
+           setName('jack')
+       }
+   
+       function onMount(){
+           ReactDom.unmountComponentAtNode(document.getElementById('root'))
+       }
+       /**
+        * useEffect如果不传第二个参数则
+        */
+       useEffect(() =>{
+           let timer =  setInterval(() =>{
+               setCount(count =>count+1)
+           },500)
+           return () =>{
+               clearInterval(timer)
+           }
+       },[])
+       return (
+           <div>
+               <h2>当前求和为:{count}</h2>
+               <h2>我的名字是:{name}</h2>
+               <button onClick={add}>点我加1</button>
+               <button onClick={changeName}>点我改名</button>
+               <button onClick={onMount}>卸载组件</button>
+           </div>
+       )
+   }
+   ```
+
+##### 7.4.useRef的使用
+
+1. refHook可以在函数组件中查找存储/查找组件标签或任意数据
+
+   ```react
+   import { useRef } from 'react'
+   export default function Input(){
+       const myRef = useRef()
+       function show(){
+           console.log(myRef.current.value)
+       }
+       return(
+           <div style={{width:'300px'}}>
+               <div className="input-group mb-3">
+               <span className="input-group-text" id="inputGroup-sizing-default">Default</span>
+               <input ref={myRef}  type="text" className="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default"/>
+               <button onClick={show}>点我提示数据</button>
+               </div>
+           </div>
+       )
+   }
+   ```
+
+#### 8.Fragment的使用
+
+1. 什么是Fragment?
+
+   在向 DOM 树批量添加元素时，一个好的实践是创建一个document.createDocumentFragment，先将元素批量添加到
+   DocumentFragment 上，再把 DocumentFragment 添加到 DOM 树，减少了 DOM操作次数的同时也不会创建一个新元素
+
+   和 DocumentFragment 类似，React 也存在 Fragment 的概念，用途很类似。在 React 16之前，Fragment 的创建是通过扩展包 react-addons-create-fragment 创建，而 React 16 中则通过<React.Fragment></React.Fragment> 直接创建 ‘Fragment'。
+
+2. 如何使用?
+
+   1. ```react
+      import { Fragment, useRef } from 'react'
+      export default function Input(){
+          const myRef = useRef()
+          function show(){
+              console.log(myRef.current.value)
+          }
+          return(
+              <Fragment>
+                  <div className="input-group mb-3" style={{width:'300px'}}>
+                      <span className="input-group-text" id="inputGroup-sizing-default">Default</span>
+                      <input ref={myRef}  type="text" className="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default"/>
+                      <button onClick={show}>点我提示数据</button>
+                  </div>
+              </Fragment>
+          )
+      }
+      ```
+
+      Fragment组件可以支持传递一个key
+
+3. 空标签的使用也可以代替Fragment但是空标签无法传递key值
+
+   ```react
+   import React, { Component } from 'react'
+   import Demo from './component/fragment'
+   export default class App extends Component {
+     render() {
+       return (
+         <>
+           <Demo/>
+         </>
+       )
+     }
+   }
+   ```
+
+#### 9.Context的使用
+
+1. 什么是Context?
+
+   Context 提供了一个无需为每层组件手动添加 props，就能在组件树间进行数据传递的方法。在一个典型的 React 应用中，数据是通过 props 属性自上而下（由父及子）进行传递的，但这种做法对于某些类型的属性而言是极其繁琐的（例如：地区偏好，UI 主题），这些属性是应用程序中许多组件都需要的。Context 提供了一种在组件之间共享此类值的方式，而不必显式地通过组件树的逐层传递 props
+
+2. 什么时候使用Context?
+
+   Context 设计目的是为了共享那些对于一个组件树而言是“全局”的数据。如果父组件想和自己的子组件孙组件层级进行数据传输时,我们不需要像props那样父传子，子传孙这样。使用Context(上下文)可以直接将父组件的指定数据传给所有子孙组件
+
+3. 如何使用Context?
+
+   ```react
+   import React, { Component, createContext } from 'react'
+   
+   //创建Contenxt对象
+   const MyContext = createContext()
+   const {Provider} = MyContext
+   export default class A extends Component {
+     state = {
+       username:'tom',
+       age:18
+     }
+     render() {
+       const {username,age} = this.state
+       return (
+         <div>
+           <h3>我是A组件</h3>
+           <h4>我的用户名是{username}</h4>
+           <Provider value={{username,age}}>
+               <B/>
+           </Provider>
+         </div>
+       )
+     }
+   }
+   
+   class B extends Component {
+     //声明接收context
+     static contextType = MyContext
+     render() {
+       const {username,age} = this.context
+       return (
+         <div>
+           <h3>我是B组件</h3>
+           <h4>我从A组件接收的用户名是:{username}年龄是{age}</h4>
+               <C/>
+         </div>
+       )
+     }
+   }
+   class C extends Component {
+       //声明接收context
+       static contextType = MyContext
+       render() {
+         const {username,age} = this.context
+         return (
+           <div>
+               <h3>我是C组件</h3>
+               <h4>我从A组件接收的用户名是:{username}年龄是{age}</h4>         
+           </div>
+         )
+       }
+     }
+   
+   ```
+
+4. 以上方法只适用于类式组件,下面介绍使用useContext()在函数组件中获取上下文
+
+   ```react
+   import React, { createContext, useContext, useState } from 'react'
+   
+   //创建Contenxt对象
+   const MyContext = createContext()
+   const {Provider} = MyContext
+   export default function A(){
+     const [user,setUser] = useState({username:'tom',age:18})
+       return (
+         <div>
+           <h3>我是A组件</h3>
+           <h4>我的用户名是{user.username}</h4>
+           <Provider value={{...user}}>
+               <B/>
+           </Provider>
+         </div>
+       )
+   }
+   
+   function B() {
+       const {username,age} = useContext(MyContext)
+       return (
+         <div>
+           <h3>我是B组件</h3>
+           <h4>我从A组件接收的用户名是:{username}年龄为{age}</h4>
+               <C/>
+         </div>
+       )
+   }
+   function C(){
+       const {username,age} = useContext(MyContext)
+         return (
+           <div>
+               <h3>我是C组件</h3>
+               <h4>我从A组件接收的用户名是:{username}年龄为{age}</h4>         
+           </div>
+         )
+     }
+   ```
+
+
+#### 10.PurComponent的使用
+
+1. 什么是PurComponent?
+
+   React.PureComponent 与 React.Component 几乎完全相同，但 React.PureComponent 通过props和state的浅对比来实现 shouldComponentUpate()
+
+   在普通的Component中可以使用shouldComponentUpdate来优化性能。
+
+2. 如何使用PurComponent?
+
+   ```react
+   import React, { PureComponent } from 'react'
+   export default class Car extends PureComponent {
+     state = {
+       carName:'法拉利'
+     }
+     changeCar = () =>{
+       this.setState({carName:'劳斯莱斯'})
+     }
+     render() {
+       const {carName} = this.state
+       console.log('Car--render')
+       return (
+         <>
+             <span>我的车为:{carName}</span>
+             <br/>
+             <button onClick={this.changeCar}>点击换车</button>
+             <hr />
+             <Child/>
+         </>
+       )
+     }
+   }
+   class Child extends PureComponent{
+     render(){
+       //使用PureComponent以后父组件render若子组件不发生改变则不会调用子组件render
+       console.log('child--render')
+       return (
+         <>
+           <span>我的车为劳斯莱斯</span>
+         </>
+       )
+     }
+   }
+   ```
+
+   **注意**: **PureComponent只是对数据进行浅对比，如果存在obj或者复杂数据结构则不可用。** 在PureComponent中，如果包含比较复杂的数据结构，可能会因深层的数据不一致而产生错误的否定判断，从而shouldComponentUpdate结果返回false，导致界面得不到更新
+
+#### 11.renderProps实现插槽
+
+1. 如何向组件内部动态传入带有内容的结构(标签)?
+
+   ```react
+   Vue中:
+   	使用slot技术，也就是通过组件标签传入结构<A><B/></A>
+   React中:
+   	使用children props:通过组件标签体传入结构
+       使用render props:通过组件标签属性传入结构,而且可以携带数据,一般用render函数属性
+   ```
+
+2. children props
+
+   ```react
+   <A>
+   	<B>XXX</B>
+   </A>
+   问题如果B组件需要A组件的数据 =>这种办法无法做到
+   ```
+
+3. render props
+
+   ```react
+   <A render= {data =><B data={data}/>}/>
+   A组件:{this.props.render(需要传递给此位置组件的数据)}
+   B组件:读取A组件传入的数据显示{this.props.data}
+   ```
+
+4. 实际案例封装一个组件可以用button切换指定组件的显示
+
+   ```react
+   import React, { Component } from 'react'
+   
+   export default class Show extends Component {
+     state = {
+       isShow:true
+     }
+     changeShow = () =>{
+       this.setState(({isShow})=>({isShow:!isShow}))
+     }
+     render() {
+       const {isShow} = this.state
+       return (
+           <>
+               <div className="card" style={{width:'300px'}}>
+                   <div className="card-body">
+                       {this.props.render(isShow)}
+                   </div>
+                   <button onClick={this.changeShow} type="button" className="btn btn-primary">是否显示</button>
+               </div>        
+           </>
+       )
+     }
+   }
+   ```
+
+   ```react
+   import React, { Component } from 'react'
+   
+   export default class List extends Component {
+     render() {
+       const {isShow} = this.props
+       return (
+           <>
+               {
+               isShow ?
+                   <ul className="list-group">
+                   <li className="list-group-item">An item</li>
+                   <li className="list-group-item">A second item</li>
+                   <li className="list-group-item">A third item</li>
+                   <li className="list-group-item">A fourth item</li>
+                   <li className="list-group-item">And a fifth one</li>
+               </ul>
+               : ''
+           }      
+           </>
+       )
+     }
+   }
+   ```
+
+   ```react
+   import React, { Component } from 'react'
+   import List from './component/List'
+   import Show from './component/show'
+   export default class App extends Component {
+     render() {
+       return (
+           <>
+              <Show render={isShow =><List isShow={isShow}/>}/>
+           </>
+       )
+     }
+   }
+   ```
+
+#### 12.错误边界(Error boundary)
+
+1. 什么是错误边界?
+
+   默认情况下，若一个组件在**渲染期间（render）** 发生错误，会导致整个组件树全部被卸载
+
+   错误边界是一种 `React` 组件，这种组件**可以捕获发生在其子组件树任何位置的** **JavaScript** **错误，并打印这些错误，同时展示降级** **UI**，而并不会渲染那些发生崩溃的子组件树。**错误边界在渲染期间、生命周期方法和整个组件树的构造函数中捕获错误**
+
+2. 错误边界的注意点?
+
+   错误边界无法捕获一下场景中出现的错误:
+
+   1. 自身的错误
+   2. 异步的错误
+   3. 事件中的错误
+   4. 事件中的错误
+
+3. **总结：仅处理渲染子组件期间的同步错误**
+
+4. 错误边界的使用?
+
+   ```react
+   import React, { Component } from 'react'
+   
+   export default class Child extends Component {
+     state = {
+       // users:[
+       //     {id:'001',name:'tom',age:18},
+       //     {id:'002',name:'jack',age:19},
+       //     {id:'003',name:'sery',age:20}
+       // ]
+       users:"abc"
+     }
+     render() {
+       const {users} = this.state
+       return (
+           <>
+               <h2>我是child组件</h2>
+               <ul className="list-group" style={{width:'300px'}}>
+                   {
+                       users.map(user =>{
+                           return <li key={user.id} className="list-group-item">{user.name+'-----'+user.age}</li>
+                       })
+                   }
+               </ul>       
+           </>
+       )
+     }
+   }
+   ```
+
+   此时child组件会报错 users.map is not a function
+
+   在Parent组件中捕获错误
+
+   ```react
+   import React, { Component } from 'react'
+   import Child from './child'
+   export default class Parent extends Component {
+     state = {
+       hasError:''//用于标识子组件是否产生错误
+     }
+     static getDerivedStateFromError(error){
+       //如果parent子组件出现任何错误都会调用这个钩子并会捕获误传进来
+       return {hasError:error}
+     }
+     //如果渲染当中如果子组件出现错误会执行这个生命周期钩子
+     componentDidCatch(){
+       //一般统计错误次数发送给后台
+       console.log('统计错误信息，反馈给服务器，通知编码人员解决bug')
+     }
+     render() {
+       return (
+         <>
+           <h2>我是Parent组件</h2>
+           {this.state.hasError ? <h2>当前网络不稳定,请稍后再试</h2> : <Child/>}
+         </>
+       )
+     }
+   }
+   
+   ```
+
+   
